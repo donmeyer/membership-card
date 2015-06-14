@@ -1,7 +1,5 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
 ### What is this repository for? ###
 
 So I built Lee Hart's slick little [1802 Membership Card](http://www.sunrise-ev.com//membershipcard.htm) and its Front Panel card. Next I wanted to load some programs onto it! There was that nice DB-25 connector all ready to connect to my PC's parallel port. However... I've got a Mac, and haven't seen a computer parallel port in perhaps a decade.
