@@ -549,7 +549,7 @@ def main( argv ):
 						help="Number of bytes to upload. Default is 256." )
 	
 	parser.add_option( "-b", "--baud",
-						action="store", type="int", dest="baud", default=9600,
+						action="store", type="int", dest="baud", default=19200,
 						help="Serial port baud rate. Default is 9600." )
 	
 	parser.add_option( "", "--dump",
