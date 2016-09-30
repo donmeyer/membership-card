@@ -65,11 +65,11 @@ The one tricky bit is that to read data from the 1802, the high and low nybbles 
 
 ## Assembly
 
-A schematic is on my to-do list, but the curcuit is really pretty simple. A lot of port pins to the DB-25 connector, and then power, address, and I2C connections for the rest of the port IC.
+A schematic is on my to-do list, but the circuit is really pretty simple. A lot of port pins to the DB-25 connector, and then power, address, and I2C connections for the rest of the port IC.
 
 My prototype was built using a solderless breadboard. (soldering was required to get appropriate wires between the breadboard and the DB-25 connector.)
 
-Here are the connections between the DB-25 connector and the MCP230127 chip, DB-25 first and the IC pin second:
+Here are the connections between the DB-25 connector and the MCP23017 chip, DB-25 first and the IC pin second:
 
 	1 - 25
 	2 - 1
@@ -95,7 +95,7 @@ Here are the connections between the DB-25 connector and the MCP230127 chip, DB-
 DB-25 pin 19 to GND (ground) of the Arduino etc.
 
 
-Additional connection for other pins of the MCP230127 chip, chip pins first:
+Additional connection for other pins of the MCP23017 chip, chip pins first:
 
 	9 - +5V (Vdd)
 	10 - GND (Vss)
@@ -227,7 +227,7 @@ The Arduino software responds to commands over the Arduino's USB serial port to 
 
 The command set is designed to make it fairly easy to talk to the Arduino loader directly from a terminal.
 
-You can directly enter simple programs in hex, read back memory locations, etc. Obviously to do anything complicated you'll want to use some host software such at the host utility I wrote in Python.
+You can directly enter simple programs in hex, read back memory locations, etc. Obviously to do anything complicated you'll want to use some host software such as the host utility I wrote in Python.
 
 Each command is terminated with a newline character.
 
