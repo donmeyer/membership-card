@@ -178,7 +178,7 @@ def openSerialPort():
 #----------------------------------------------------------------
 
 def sendCmd( cmd, ack=True ):
-	logDebug( "Send command: %s" % cmd )
+	logDebug( "Send command: '%s'" % cmd )
 	if options.noaction:
 		return			
 	serialPort.write( "%s\n" % cmd )
@@ -475,36 +475,41 @@ def terminalAction():
 	print "1802 Membership Card Loader Terminal Mode"
 	print "Enter an 'x' or 'q' followed by Enter to quit."
 	print "All commands that are understood by the Arduino 1802 Loader can be entered."
-	print "In addition, you can download a file toe the 1802 by using the '@' command."
+	print "In addition, you can download a file to the 1802 by using the '@<filename>' command."
 	print "(e.g.  >@test.hex)"
 
 	while True:
 		sys.stdout.write( ">" )
-		line = sys.stdin.readline()
+		line = sys.stdin.readline().strip()
 		logDebug( "Line '%s' length %d" % (line, len(line) ) ) 
-		if line[0] == 'x' or line[0] == 'q':
+		if len(line) == 0:
+			pass
+		elif line[0] == 'x' or line[0] == 'q':
 			# End terminal mode
 			return
 		elif line[0] == '@':
-			filename = line[1:].rstrip()
+			filename = line[1:]
 			downloadAction( filename )
 		else:
-			sendCmd( line, ack=False )
+			sendCmd( line, ack=False )	# Don't ask for ack, we handle the response manually below.
 	
-			serialPort.timeout = serialAckTimeout	# Plenty of time for a response
 			c = serialPort.read(1)
-			# If first character is an "ack", ignore it.
+			# If first character is an "ack", ignore it. (quiet success)
 			if c == '!':
 				logDebug( "Got bang")
 			elif c == '#':
 				print( "ERROR" )
-			elif c == None:
+			elif c == None or c == "":
 				print( "*** No response to command" )
 			else:
+				if line[0] == '<':
+					# Special case for reading bytes back - determine how many characters to expect so we don't have to wait for the timeout
+					expect = int( line[1:] ) * 2
+				else:
+					expect = None
 				sys.stdout.write( c )
-				serialPort.timeout = 0.5	# hex characters only other option - don't wait too long once they stop coming
 				while True:
-					logDebug( "read 1 char" )
+					logDebug( "read 1 char 0x%02X" % ord(c[0]) )
 					c = serialPort.read(1)
 					if c == None or c == "":
 						logDebug( "read none" )
@@ -514,6 +519,13 @@ def terminalAction():
 						logDebug( "read %d chars '%c'" % ( len(c), c[0] ) )
 						sys.stdout.write( c )
 					sys.stdout.flush()
+					
+					if expect:
+						expect -= 1
+						if expect <= 1:		# Look for one less due to the first char read that is always done
+							print
+							break
+
 					
 				
 
