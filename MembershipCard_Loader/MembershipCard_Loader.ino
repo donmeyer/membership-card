@@ -35,7 +35,10 @@
 
 #include <Wire.h>
 #include <PString.h>
-#include "Adafruit_MCP23017.h"
+
+// This is my slightly modified library. For some reason, the Port A polarity register in the MCP23017 was being set to invert the states.
+// My hacked library explicitly sets that register to non-inverting. No idea whether this is a chip issue or ???
+#include "DTM_Adafruit_MCP23017.h"
 
 #if ENABLE_LCD
 #include <LiquidCrystal.h>
