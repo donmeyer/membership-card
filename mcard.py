@@ -253,11 +253,13 @@ def readDataBytes( count ):
 #----------------------------------------------------------------
 
 
-def importHex( src ):
+def importHex( filename ):
 	global dataImage
 	bb = bytearray()
 	
+	src = open( filename, 'r' )
 	lines = src.readlines()
+	src.close()
 
 	for line in lines:
 		line = string.strip( line )
@@ -268,8 +270,7 @@ def importHex( src ):
 			b = string.atoi( num, 16 )
 			bb.append( b )
 	
-	zz = StringIO.StringIO( bb )
-	dataImage.add_binary( zz )	
+	dataImage.add_binary( bb )	
 	
 
 
@@ -289,7 +290,7 @@ def dataToHexStrings( data ):
 
 def ximportFile( src, filename ):
 	global dataImage
-	dataImage = bincopy.File()
+	dataImage = bincopy.BinFile()
 	bb = bytearray( b'\x7A\x7b\x30\x00' )
 	zz = StringIO.StringIO( bb )
 	dataImage.add_binary( zz )	
@@ -297,20 +298,20 @@ def ximportFile( src, filename ):
 
 
 
-def importFile( src, filename ):
+def importFile( filename ):
 	global dataImage
-	dataImage = bincopy.File()
+	dataImage = bincopy.BinFile()
 	
 	# Step 1, what kind of file?
-	type = getFileType( src, filename )
+	type = getFileType( filename )
 	if type == "srecord":
-		dataImage.add_srec( src )
+		dataImage.add_srec_file( filename )
 	elif type == "binary":
-		dataImage.add_binary( src )
+		dataImage.add_binary_file( filename )
 	elif type == "intelhex":
-		dataImage.add_ihex( src )
+		dataImage.add_ihex_file( filename )
 	elif type == "hex":
-		importHex( src )
+		importHex( filename )
 	else:
 		bailout( "Unknown file type" )
 		
@@ -319,7 +320,7 @@ def importFile( src, filename ):
 #
 # Returns "srecord", "hex", "intelhex", "binary", or None
 #
-def getFileType( src, filename ):
+def getFileType( filename ):
 	m = re.search(".*\\.(.+)$", filename , re.S)
 	logDebug( m )
 	if m:
@@ -336,10 +337,9 @@ def getFileType( src, filename ):
 
 	# TODO: implement this!
 	# If we get here, need to look at the file contents to try and tell
-	src.seek(0)
+	src = open( filename, 'r' )
 	line = src.readline()
-
-	src.seek(0)
+	src.close()
 	
 	return None
 
@@ -386,9 +386,7 @@ def downloadAction( filename ):
 		openSerialPort()
 		
 	# Import the file
-	src = open( filename, 'r' )
-	importFile( src, filename )
-	src.close()
+	importFile( filename )
 	
 	start = time.time()
 
@@ -450,7 +448,7 @@ def uploadAction( filename ):
 	# 	bytes = readDataBytes(1)
 	# 	bb.append( bytes )
 
-	dataImage = bincopy.File()
+	dataImage = bincopy.BinFile()
 
 	zz = StringIO.StringIO( bb )
 	dataImage.add_binary( zz )	
