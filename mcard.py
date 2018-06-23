@@ -531,6 +531,7 @@ def terminalAction():
 def assemble( filename ):
 	if asmAvailable == False:
 		print "Assembler not available. Is 'cosmacasm.py' in the same directory as mcard.py?"
+		print "You can also add the path to 'cosmacasm.py' to the PYTHONPATH environment variable."
 		sys.exit(1)
 	print "Assembling", filename
 	# Call the assembler module.

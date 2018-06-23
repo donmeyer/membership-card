@@ -139,12 +139,18 @@ Installation of the 3rd=party moduules on OSX:
 
 To use the simple assembler I have written, download my [Cosmac 1802 Assembler](https://bitbucket.org/don/cosmac-1802-assembler)
 
-Place the assembler Python file `cosmacasm.py` in the same directory as `mcard.py`.
+Place the assembler Python file `cosmacasm.py` and the other `.py` files from that directory in the same directory as `mcard.py`.
 
-Or, on a Mac or Linux system you can create a symlink to the assembler. (Not sure what the options are for a Windows system)
+OPTION #2  
+Or, you can place the path to `cosmacasm.py` into your `PYTHONPATH` environment variable.
+
+OPTION #3  
+Or, on a Mac or Linux system you can create a symlink to the assembler and each of its supporting modules. (Not sure what the options are for a Windows system)
 
 	cd <directory containing "mcard.py">
 	ln -s <path-to-the-assmebler-repo>/cosmacasm.py cosmacasm.py
+	ln -s <path-to-the-assmebler-repo>/Chunker.py cosmacasm.py
+	ln -s <path-to-the-assmebler-repo>/Parser.py cosmacasm.py
 
 
 ## Usage
