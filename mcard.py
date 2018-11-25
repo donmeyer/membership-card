@@ -564,7 +564,7 @@ def bailout( msg ):
 def main( argv ):
 	global options
 
-	usage = """"%prog [options] <file>
+	usage = """%prog [options] <file>
 	If no port specified, trys to pick an appropriate one."""
 
 	parser = optparse.OptionParser(usage=usage)
