@@ -52,7 +52,7 @@ import serial.tools.list_ports
 
 import bincopy
 
-# If the assembler is available, set a flag true, otgherwise false.
+# If the assembler is available, set a flag true, otherwise false.
 # This way we can use the assmebler if possible, but not cause an error if it's not present.
 try:
 	import cosmacasm
@@ -450,8 +450,7 @@ def uploadAction( filename ):
 
 	dataImage = bincopy.BinFile()
 
-	zz = StringIO.StringIO( bb )
-	dataImage.add_binary( zz )	
+	dataImage.add_binary( bb )	
 
 	dest = open( filename, 'w' )
 
