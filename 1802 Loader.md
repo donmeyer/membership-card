@@ -49,7 +49,7 @@ Optional Parts:
 
 
 ## Theory
-	
+
 The 16-line port expander is configured as 12 output pins and 4 input pins.
 
 - A0-A3 are inputs that read the output port and multiplexer on the Front Panel card.
@@ -108,7 +108,7 @@ Additional connection for other pins of the MCP23017 chip, chip pins first:
 
 
 ## Connection & Use
-	
+
 - Set the Wait and Clear switches in the "up" position.
 - Set the Read/Write switch to "Read".
 - Set all of the data input switches to the "up" position.
@@ -141,10 +141,10 @@ To use the simple assembler I have written, download my [Cosmac 1802 Assembler](
 
 Place the assembler Python file `cosmacasm.py` and the other `.py` files from that directory in the same directory as `mcard.py`.
 
-OPTION #2  
+OPTION #2
 Or, you can place the path to `cosmacasm.py` into your `PYTHONPATH` environment variable.
 
-OPTION #3  
+OPTION #3
 Or, on a Mac or Linux system you can create a symlink to the assembler and each of its supporting modules. (Not sure what the options are for a Windows system)
 
 	cd <directory containing "mcard.py">
@@ -185,10 +185,10 @@ Set the file format with the `--format` option.
 ### Run
 
 The run command `-r` can be used to run an existing program already loaded on the 1802, or it can be given with the download command to cause the program to run after the download is complete.
-  
- 
+
+
 ### Terminal Mode
-  
+
 The loader host supports a simple terminal mode that makes it easy to send commands to the Arduino Loader.
 It is entered by launching with the `-t` option.
 
@@ -200,21 +200,21 @@ assembled and downloaded in one step. This makes it quite easy to modify a progr
 assembled, downloaded, and executed with one command.
 
 	> mcard.py --baud 19200 -r -d slowq.src
-	
+
 
 ## Performance
 
 At 19,200 baud, an 8k download takes a little under 40 seconds.
 
 
-  
+
 ## Examples
-  
+
 Set the serial port speed to use, download a hex file, and run it when the download completes:
 
 	mcard.py --baud 19200 -r -d slowq.hex
-   
-   
+
+
 Upload 64 bytes, display them on the terminal, and write them to file `foo.hex` in hex format.
 
 	mcard.py -s 64 --baud 19200 --dump -u --format hex foo.hex
@@ -257,8 +257,8 @@ All commands that take letters may use either the uppercase or lowercase letter.
 |  `+p`        |  Set signal pin high  |
 |  `-p`        |  Set signal pin low   |
 |  `>hh`      |  Set output port      |
-		
-		
+
+
 ### Detailed Descriptions
 
 
@@ -310,7 +310,7 @@ The 'n' is optional, and one byte is read if the 'n' is not present. N can range
 -----------------------------------------
 
 ## Low-level Commands
-		
+
 `+p`  -  Set signal pin high
 
 Values for "p":
@@ -334,7 +334,7 @@ Values for "p":
 `>hh`   -   Place hex byte on output port
 
 This places the given hex byte on the loader's data output port lines.
-This can then be loaded into memory via a "manual" Load cycle, or read by a program running on the Membershop Card.
+This can then be loaded into memory via a "manual" Load cycle, or read by a program running on the Membership Card.
 
 
 --------------------------------------
@@ -342,7 +342,7 @@ This can then be loaded into memory via a "manual" Load cycle, or read by a prog
 ## Examples
 
 ### Download Examples
-	
+
 Starting load of a simple Q output blinker program at address 0x000, and then running the program.
 
 	*D
@@ -381,7 +381,7 @@ Upload 1 byte from address 0x0000, and 8 bytes from address 0x44
 
 
 ### Misc. Examples
-	
+
 Set the memory write line low.
 
 	-M
