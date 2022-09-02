@@ -1,0 +1,4 @@
+{
+  "cc.aeron.nova-flake8.checkMode" : "onChange",
+  "cc.aeron.nova-flake8.executablePath" : "\/Users\/don\/Library\/Python\/3.8\/bin\/flake8"
+}
