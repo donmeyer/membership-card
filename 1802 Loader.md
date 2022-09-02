@@ -266,7 +266,7 @@ All commands that take letters may use either the uppercase or lowercase letter.
 
 The 1802 is placed in Load mode with memory writes enabled.
 In this mode the loader expects pairs of hex digits, which are loaded sequentially into memory. These must be pairs (e.g. "0A"), and a maximum of 16 pairs may be sent per line (before a newline).
-The only other valid commands in this mode are the "mode" commands and the "advance to adress command".
+The only other valid commands in this mode are the "mode" commands and the "advance to address command".
 Address is in hex, and can be 1 to 4 digits. (e.g "E", "17", "000E", "AA00").
 The address is optional, and if no address given 0x0000 is used.
 
@@ -274,14 +274,14 @@ The address is optional, and if no address given 0x0000 is used.
 `*U[addr]` 	- Upload Mode
 
 In this mode, the primary command is the read-bytes command.
-The only other valid commands in this mode are the "mode" commands and the "advance to adress command".
+The only other valid commands in this mode are the "mode" commands and the "advance to address command".
 Address is in hex, and can be 1 to 4 digits. (e.g "E", "17", "000E", "AA00").
 The address is optional, and if no address given, 0x0000 is used.
 
 
 `*R`	-	Run Mode
 
-Runs from current address, so to start at address zero, you must first isssue a reset command.
+Runs from current address, so to start at address zero, you must first issue a reset command.
 
 
 `*P`	-	Pause Mode
