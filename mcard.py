@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # 1802 Membership Card Loader
 #
@@ -43,7 +43,7 @@ import os, sys, csv, datetime, time
 import codecs
 import optparse
 import re
-import StringIO
+import io
 import string
 
 import serial
@@ -57,7 +57,7 @@ import bincopy
 try:
 	import cosmacasm
 	asmAvailable = True
-except ImportError, e:
+except ImportError as e:
 	if e.message != 'No module named cosmacasm':
 		raise
 	asmAvailable = False
@@ -103,7 +103,7 @@ def listPorts():
 	ports = serial.tools.list_ports.comports()
 	for a,b,c in ports:
 		print( a, b, c )
-		
+
 
 
 #
@@ -111,7 +111,7 @@ def listPorts():
 #
 # If no port found, or multiple ports found, this will return None.
 # Ignores ports with "Bluetooth" in the name.
-#		
+#
 def pickPort():
 	ports = serial.tools.list_ports.comports()
 	portname = None
@@ -126,14 +126,14 @@ def pickPort():
 			# Too many ports
 			print( "Too many ports" )
 			return None
-	
+
 	if portname == None:
 		print( "No ports found" )
-		
-	return portname
-	
 
-	
+	return portname
+
+
+
 #
 # Open the given serial port and configure it.
 #
@@ -144,12 +144,12 @@ def _openSerialPort( portName ):
 	serialPort = serial.Serial( port=portName, baudrate=options.baud, timeout=serialAckTimeout )
 	if serialPort:
 		logVerbose( "Serial port open: '%s'" % portName )
-		
+
 		# Wait until the Arduino resets and starts running.
 		time.sleep( resetDelayTime )
 	else:
 		bailout( "Unable to open serial port '%s'" % portName )
-	
+
 
 
 #
@@ -172,7 +172,7 @@ def openSerialPort():
 			bailout( "Unable to automatically choose a port" )
 
 
-	
+
 #----------------------------------------------------------------
 #
 #----------------------------------------------------------------
@@ -180,10 +180,12 @@ def openSerialPort():
 def sendCmd( cmd, ack=True ):
 	logDebug( "Send command: '%s'" % cmd )
 	if options.noaction:
-		return			
-	serialPort.write( "%s\n" % cmd )
+		return
+	b = bytes("%s\n" % cmd, 'utf-8')
+	serialPort.write(b)
 	if ack:
 		b = serialPort.read(1)
+		b = str(b, encoding='utf-8')
 		if b == '!':
 			pass
 		elif b == '#':
@@ -192,7 +194,7 @@ def sendCmd( cmd, ack=True ):
 			bailout( "Timeout waiting for ACK of cmd '%s'" % cmd )
 	time.sleep( cmdDelayTime )
 
-	
+
 
 def rcvByte():
 	s = serialPort.read(2)
@@ -200,7 +202,7 @@ def rcvByte():
 	b = int( s, 16 )
 	logDebug( "Received byte: 0x%02X" % b )
 	return b
-	
+
 
 
 def setDownloadMode( addr ):
@@ -244,7 +246,7 @@ def readDataBytes( count ):
 		b = rcvByte()
 		bytes.append(b)
 	return bytes
-	
+
 
 
 
@@ -256,22 +258,22 @@ def readDataBytes( count ):
 def importHex( filename ):
 	global dataImage
 	bb = bytearray()
-	
+
 	src = open( filename, 'r' )
 	lines = src.readlines()
 	src.close()
 
 	for line in lines:
-		line = string.strip( line )
+		line = line.strip()
 		if len(line) == 0 or line[0] == '#':
 			continue
 		m = re.findall( r'([a-fA-F0-9][a-fA-F0-9])', line )
 		for num in m:
-			b = string.atoi( num, 16 )
+			b = int(num, base=16)
 			bb.append( b )
-	
-	dataImage.add_binary( bb )	
-	
+
+	dataImage.add_binary( bb )
+
 
 
 def dataToHexStrings( data ):
@@ -286,22 +288,22 @@ def dataToHexStrings( data ):
 
 	return buf
 
-	
+
 
 def ximportFile( src, filename ):
 	global dataImage
 	dataImage = bincopy.BinFile()
 	bb = bytearray( b'\x7A\x7b\x30\x00' )
-	zz = StringIO.StringIO( bb )
-	dataImage.add_binary( zz )	
-	
+	zz = io.StringIO( bb )
+	dataImage.add_binary( zz )
+
 
 
 
 def importFile( filename ):
 	global dataImage
 	dataImage = bincopy.BinFile()
-	
+
 	# Step 1, what kind of file?
 	type = getFileType( filename )
 	if type == "srecord":
@@ -314,7 +316,7 @@ def importFile( filename ):
 		importHex( filename )
 	else:
 		bailout( "Unknown file type" )
-		
+
 
 
 #
@@ -340,7 +342,7 @@ def getFileType( filename ):
 	src = open( filename, 'r' )
 	line = src.readline()
 	src.close()
-	
+
 	return None
 
 
@@ -356,7 +358,7 @@ def exportImage( dest ):
 		dest.write( buf )
 	else:
 		bailout( "Invalid export format '%s'" % options.format )
-	
+
 
 
 def dumpImage():
@@ -380,21 +382,21 @@ def dumpImage():
 
 def downloadAction( filename ):
 	global options
-	
+
 	# Open serial port
 	if options.noaction == False:
 		openSerialPort()
-		
+
 	# Import the file
 	importFile( filename )
-	
+
 	start = time.time()
 
 	# TODO: reconcile address embedded in S-Record file with explicit address if given
 	# addr = dataImage.get_minimum_address()
 	addr = options.addr
 	setDownloadMode( addr )
-	
+
 	# Download it to the 1802
 	bytes = 0
 	buf = ""
@@ -409,29 +411,29 @@ def downloadAction( filename ):
 		# writeDataByte( b )
 	if bytes > 0:
 		sendCmd( buf )
-		
+
 	finish = time.time()
 	logVerbose( "Download Done, %d bytes in %.1f seconds." % ( len(data), (finish - start) ) )
 
-	
-	
+
+
 #
 # Read bytes from the 1802
 #
 def uploadAction( filename ):
 	global options
 	global dataImage
-	
+
 	# Open serial port
 	if options.noaction:
 		return
-			
+
 	openSerialPort()
 
 	# TODO: reconcile address emebedded in S-Record file with explicit address if given
 	# a = dataImage.get_minimum_address()
 	setUploadMode( options.addr )
-	
+
 	bb = bytearray()
 
 	remaining = options.size
@@ -443,14 +445,14 @@ def uploadAction( filename ):
 		for b in bytes:
 			bb.append( b )
 		remaining -= size
-					
+
 	# for i in range( options.size ):
 	# 	bytes = readDataBytes(1)
 	# 	bb.append( bytes )
 
 	dataImage = bincopy.BinFile()
 
-	dataImage.add_binary( bb )	
+	dataImage.add_binary( bb )
 
 	dest = open( filename, 'w' )
 
@@ -463,22 +465,22 @@ def uploadAction( filename ):
 def runAction():
 	setResetMode()
 	setRunMode()
-	
-	
-		
+
+
+
 def terminalAction():
 	global serialPort
 	openSerialPort()
-	print "1802 Membership Card Loader Terminal Mode"
-	print "Enter an 'x' or 'q' followed by Enter to quit."
-	print "All commands that are understood by the Arduino 1802 Loader can be entered."
-	print "In addition, you can download a file to the 1802 by using the '@<filename>' command."
-	print "(e.g.  >@test.hex)"
+	print( """1802 Membership Card Loader Terminal Mode
+	Enter an 'x' or 'q' followed by Enter to quit.
+	All commands that are understood by the Arduino 1802 Loader can be entered.
+	In addition, you can download a file to the 1802 by using the '@<filename>' command.
+	(e.g.  >@test.hex)""")
 
 	while True:
 		sys.stdout.write( ">" )
 		line = sys.stdin.readline().strip()
-		logDebug( "Line '%s' length %d" % (line, len(line) ) ) 
+		logDebug( "Line '%s' length %d" % (line, len(line) ) )
 		if len(line) == 0:
 			pass
 		elif line[0] == 'x' or line[0] == 'q':
@@ -489,7 +491,7 @@ def terminalAction():
 			downloadAction( filename )
 		else:
 			sendCmd( line, ack=False )	# Don't ask for ack, we handle the response manually below.
-	
+
 			c = serialPort.read(1)
 			# If first character is an "ack", ignore it. (quiet success)
 			if c == '!':
@@ -516,26 +518,26 @@ def terminalAction():
 						logDebug( "read %d chars '%c'" % ( len(c), c[0] ) )
 						sys.stdout.write( c )
 					sys.stdout.flush()
-					
+
 					if expect:
 						expect -= 1
 						if expect <= 1:		# Look for one less due to the first char read that is always done
 							print
 							break
 
-					
-				
+
+
 
 
 def assemble( filename ):
 	if asmAvailable == False:
-		print "Assembler not available. Is 'cosmacasm.py' in the same directory as mcard.py?"
-		print "You can also add the path to 'cosmacasm.py' to the PYTHONPATH environment variable."
+		print( """Assembler not available. Is 'cosmacasm.py' in the same directory as mcard.py?
+		You can also add the path to 'cosmacasm.py' to the PYTHONPATH environment variable.""")
 		sys.exit(1)
-	print "Assembling", filename
+	print("Assembling", filename)
 	# Call the assembler module.
 	cosmacasm.process( filename )
-	
+
 
 
 #----------------------------------------------------------------
@@ -557,7 +559,7 @@ def logDebug( msg ):
 def bailout( msg ):
 	print( "*** %s" % msg )
 	sys.exit( -1 )
-	
+
 
 
 def main( argv ):
@@ -567,73 +569,73 @@ def main( argv ):
 	If no port specified, trys to pick an appropriate one."""
 
 	parser = optparse.OptionParser(usage=usage)
-	
+
 	parser.add_option( "-a", "--addr",
 						action="store", type="int", dest="addr", default=0,
 						help="Address to start from when uploading and downloading. Default is 0x0000" )
-	
+
 	parser.add_option( "-s", "--size",
 						action="store", type="int", dest="size", default=256,
 						help="Number of bytes to upload. Default is 256." )
-	
+
 	parser.add_option( "-b", "--baud",
 						action="store", type="int", dest="baud", default=19200,
 						help="Serial port baud rate. Default is 9600." )
-	
+
 	parser.add_option( "", "--dump",
 						action="store_true", dest="dump",
 						help="Dump data downloaded or uploaded to terminal" )
-	
+
 	parser.add_option( "-m", "--mode",
 						action="store", type="string", dest="mode", default=None,
 						help="Mode. Can be: Load, Pause, Reset, Run" )
-	
+
 	parser.add_option( "", "--format",
 						action="store", type="string", dest="format", default="srec",
 						help="Export format. Can be: srec,ihex,hex" )
-	
+
 	parser.add_option( "-d", "--download",
 						action="store_true", dest="download", default=False,
 						help="Download data to the 1802" )
-	
+
 	parser.add_option( "-u", "--upload",
 						action="store_true", dest="upload", default=False,
 						help="Upload data from the 1802." )
-	
+
 	parser.add_option( "-r", "--run",
 						action="store_true", dest="run", default=False,
 						help="Run program" )
-	
+
 	parser.add_option( "-t", "--terminal",
 						action="store_true", dest="terminal", default=False,
 						help="Enter simple terminal mode" )
-	
+
 	parser.add_option( "-n", "--noaction",
 						action="store_true", dest="noaction", default=False,
 						help="Simulate the action, don't communicate with the 1802 or write any files." )
-	
+
 	parser.add_option( "-p", "--port",
 						action="store", type="string", dest="port", default=None,
 						help="Serial port to use. If not given, a best guess is made when possible." )
-	
+
 	parser.add_option( "-l", "--listPorts",
 						action="store_true", dest="listPorts", default=False,
 						help="List the available serial ports" )
-	
+
 	parser.add_option( "-q", "--quiet",
 						action="store_const", const=0, dest="verbose",
 						help="Little to no progress logging to terminal." )
-	
+
 	parser.add_option( "-v", "--verbose",
 						action="store_const", const=1, dest="verbose", default=1,
 						help="Progress logging to terminal. [default]" )
-	
+
 	parser.add_option( "--noisy",
 						action="store_const", const=2, dest="verbose",
 						help="Extensive progress and diagnostic logging to terminal." )
-	
+
 	(options, args) = parser.parse_args(argv)
-	
+
 	logDebug( options )
 	logDebug( args )
 
@@ -650,46 +652,46 @@ def main( argv ):
 
 	if options.listPorts == True:
 		listPorts()
-		sys.exit( 0 )			
-			
-			
+		sys.exit( 0 )
+
+
 	if options.download == True:
 		# Get the filename
 		if len(args) > 1:
 			filename = args[1]
 		else:
-			print "No file name given."
-			print main.__doc__
+			print("No file name given.")
+			print(main.__doc__)
 			sys.exit(1)
 
 		rootname, ext = os.path.splitext( filename )
 		if ext == ".src":
 			assemble( filename )
 			filename = rootname + ".hex"
-			
+
 		# Perform the download
 		downloadAction( filename )
-	
-	
+
+
 	if options.upload == True:
 		# Get the filename
 		if len(args) > 1:
 			filename = args[1]
 		else:
-			print "No file name given."
-			print main.__doc__
+			print("No file name given.")
+			print(main.__doc__)
 			sys.exit(1)
-		
+
 		# Perform the upload
 		uploadAction( filename )
-	
-	
+
+
 	#
 	# Optional add-on actions
 	#
 	if options.dump == 1:
 		dumpImage()
-	
+
 
 	if options.run:
 		if options.noaction == False:
@@ -712,4 +714,3 @@ def main( argv ):
 
 if __name__ == '__main__':
 	sys.exit( main(sys.argv) or 0 )
-
