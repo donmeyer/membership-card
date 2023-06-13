@@ -132,7 +132,7 @@ Bincopy adds support for reading and writing S-=Records and Intel Hex.
 
 The loader host tool can be run from the command line by treating it as an executable script.
 
-Installation of the 3rd=party moduules on OSX:
+Installation of the 3rd=party modules on MacOS:
 
 	> sudo easy_install -U bincopy
 	> sudo easy_install -U pyserial
