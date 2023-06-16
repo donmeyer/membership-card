@@ -42,7 +42,7 @@
 import os
 import sys
 import time
-import optparse
+import argparse
 import re
 import io
 
@@ -504,7 +504,7 @@ def assemble(filename):
         sys.exit(1)
     print("Assembling", filename)
     # Call the assembler module.
-    cosmacasm.process(filename)
+    cosmacasm.main([filename])
 
 
 # ----------------------------------------------------------------
@@ -526,82 +526,93 @@ def bailout(msg):
     sys.exit(-1)
 
 
-def main(argv):
+def auto_int(x):
+    """Simple helper to allow parsing arguments in bases other than 10."""
+    return int(x, 0)
+
+
+def main(argv=None):
     global options
 
-    usage = """%prog [options] <file>
+    description = """Download and upload data to an 1802 Membersahip Card via the Arduino-based helper device.
     If no port specified, trys to pick an appropriate one."""
 
-    parser = optparse.OptionParser(usage=usage)
+    parser = argparse.ArgumentParser(description=description)
 
-    parser.add_option("-a", "--addr",
-                      action="store", type="int", dest="addr", default=0,
-                      help="Address to start from when uploading and downloading. Default is 0x0000")
+    parser.set_defaults(verbose=1)
 
-    parser.add_option("-s", "--size",
-                      action="store", type="int", dest="size", default=256,
-                      help="Number of bytes to upload. Default is 256.")
+    parser.add_argument("-a", "--addr",
+                        action="store", type=auto_int, dest="addr", default=0,
+                        help="Address to start from when uploading and downloading. Default is 0x0000")
 
-    parser.add_option("-b", "--baud",
-                      action="store", type="int", dest="baud", default=19200,
-                      help="Serial port baud rate. Default is 9600.")
+    parser.add_argument("-s", "--size",
+                        action="store", type=auto_int, dest="size", default=256,
+                        help="Number of bytes to upload. Default is 256.")
 
-    parser.add_option("", "--dump",
-                      action="store_true", dest="dump",
-                      help="Dump data downloaded or uploaded to terminal")
+    parser.add_argument("-b", "--baud",
+                        action="store", type=int, dest="baud", default=19200,
+                        help="Serial port baud rate. Default is 9600.")
 
-    parser.add_option("-m", "--mode",
-                      action="store", type="string", dest="mode", default=None,
-                      help="Mode. Can be: Load, Pause, Reset, Run")
+    parser.add_argument("--dump",
+                        action="store_true", dest="dump",
+                        help="Dump data downloaded or uploaded to terminal")
 
-    parser.add_option("", "--format",
-                      action="store", type="string", dest="format", default="srec",
-                      help="Export format. Can be: srec,ihex,hex")
+    parser.add_argument("-m", "--mode",
+                        action="store", dest="mode", default=None,
+                        help="Mode. Can be: Load, Pause, Reset, Run")
 
-    parser.add_option("-d", "--download",
-                      action="store_true", dest="download", default=False,
-                      help="Download data to the 1802")
+    parser.add_argument("--format",
+                        action="store", dest="format", default="srec",
+                        choices=["srec", "ihex", "hex"],
+                        help="Export format. Can be: Motorola S-Record, Intel Hex, Raw Hex")
 
-    parser.add_option("-u", "--upload",
-                      action="store_true", dest="upload", default=False,
-                      help="Upload data from the 1802.")
+    parser.add_argument("-d", "--download",
+                        action="store_true", dest="download", default=False,
+                        help="Download data to the 1802")
 
-    parser.add_option("-r", "--run",
-                      action="store_true", dest="run", default=False,
-                      help="Run program")
+    parser.add_argument("-u", "--upload",
+                        action="store_true", dest="upload", default=False,
+                        help="Upload data from the 1802.")
 
-    parser.add_option("-t", "--terminal",
-                      action="store_true", dest="terminal", default=False,
-                      help="Enter simple terminal mode")
+    parser.add_argument("-r", "--run",
+                        action="store_true", dest="run", default=False,
+                        help="Run program")
 
-    parser.add_option("-n", "--noaction",
-                      action="store_true", dest="noaction", default=False,
-                      help="Simulate the action, don't communicate with the 1802 or write any files.")
+    parser.add_argument("-t", "--terminal",
+                        action="store_true", dest="terminal", default=False,
+                        help="Enter simple terminal mode")
 
-    parser.add_option("-p", "--port",
-                      action="store", type="string", dest="port", default=None,
-                      help="Serial port to use. If not given, a best guess is made when possible.")
+    parser.add_argument("-n", "--noaction",
+                        action="store_true", dest="noaction", default=False,
+                        help="Simulate the action, don't communicate with the 1802 or write any files.")
 
-    parser.add_option("-l", "--listPorts",
-                      action="store_true", dest="listPorts", default=False,
-                      help="List the available serial ports")
+    parser.add_argument("-p", "--port",
+                        action="store", dest="port", default=None,
+                        help="Serial port to use. If not given, a best guess is made when possible.")
 
-    parser.add_option("-q", "--quiet",
-                      action="store_const", const=0, dest="verbose",
-                      help="Little to no progress logging to terminal.")
+    parser.add_argument("-l", "--listPorts",
+                        action="store_true", dest="listPorts", default=False,
+                        help="List the available serial ports")
 
-    parser.add_option("-v", "--verbose",
-                      action="store_const", const=1, dest="verbose", default=1,
-                      help="Progress logging to terminal. [default]")
+    parser.add_argument("-q", "--quiet",
+                        action="store_const", const=0, dest="verbose",
+                        help="Little to no progress logging to terminal.")
 
-    parser.add_option("--noisy",
-                      action="store_const", const=2, dest="verbose",
-                      help="Extensive progress and diagnostic logging to terminal.")
+    parser.add_argument("-v", "--verbose",
+                        action="store_const", const=1, dest="verbose",
+                        help="Progress logging to terminal. [default]")
 
-    (options, args) = parser.parse_args(argv)
+    parser.add_argument("--noisy",
+                        action="store_const", const=2, dest="verbose",
+                        help="Extensive progress and diagnostic logging to terminal.")
+
+    parser.add_argument("filename",
+                        nargs="?",
+                        metavar="FILE")
+
+    options = parser.parse_args(argv)
 
     logDebug(options)
-    logDebug(args)
 
     logDebug("Address: 0x%04X" % options.addr)
 
@@ -619,12 +630,12 @@ def main(argv):
 
     if options.download is True:
         # Get the filename
-        if len(args) > 1:
-            filename = args[1]
-        else:
+        if options.filename is None:
             print("No file name given.")
             print(main.__doc__)
             sys.exit(1)
+
+        filename = options.filename
 
         rootname, ext = os.path.splitext(filename)
         if ext == ".src":
@@ -636,15 +647,13 @@ def main(argv):
 
     if options.upload is True:
         # Get the filename
-        if len(args) > 1:
-            filename = args[1]
-        else:
+        if options.filename is None:
             print("No file name given.")
             print(main.__doc__)
             sys.exit(1)
 
         # Perform the upload
-        uploadAction(filename)
+        uploadAction(options.filename)
 
     #
     # Optional add-on actions
@@ -669,4 +678,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv) or 0)
+    sys.exit(main() or 0)
