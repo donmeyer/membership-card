@@ -450,6 +450,7 @@ def terminalAction():
 
     while True:
         sys.stdout.write(">")
+        sys.stdout.flush()
         line = sys.stdin.readline().strip()
         logDebug("Line '%s' length %d" % (line, len(line)))
         if len(line) == 0:
