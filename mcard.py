@@ -466,13 +466,14 @@ def terminalAction():
 
             c = serialPort.read(1)
             # If first character is an "ack", ignore it. (quiet success)
-            if c == '!':
-                logDebug("Got bang")
-            elif c == '#':
-                print("ERROR")
-            elif c is None or c == "":
+            if len(c) == 0:
                 print("*** No response to command")
+            elif c.decode() == '!':
+                logDebug("Got bang")
+            elif c.decode() == '#':
+                print("ERROR")
             else:
+                c = c.decode()
                 if line[0] == '<':
                     # Special case for reading bytes back - determine how many characters to expect so we don't have to wait for the timeout
                     expect = int(line[1:]) * 2
@@ -482,12 +483,14 @@ def terminalAction():
                 while True:
                     logDebug("read 1 char 0x%02X" % ord(c[0]))
                     c = serialPort.read(1)
-                    if c is None or c == "":
+                    if len(c) == 0:
                         logDebug("read none")
                         sys.stdout.write('\n')
                         break
                     else:
-                        logDebug("read %d chars '%c'" % (len(c), c[0]))
+                        c = c.decode()
+                        logDebug("read %d chars" % (len(c)))
+                        # logDebug("read %d chars '%c'" % (len(c), c[0]))
                         sys.stdout.write(c)
                     sys.stdout.flush()
 
